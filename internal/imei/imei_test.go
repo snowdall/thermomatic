@@ -2,7 +2,6 @@ package imei
 
 import (
 	"testing"
-	//"github.com/spin-org/thermomatic/internal/common"
 )
 
 func TestDecode(t *testing.T) {
@@ -23,16 +22,43 @@ func TestDecode(t *testing.T) {
 
 }
 
-/*
-func TestDecodeAllocations(t *testing.T) {
-	panic(common.ErrNotImplemented)
+func TestDecodeInvalidPanic(t *testing.T) {
+  // example invalid IMEI number 49015420323751
+  var imei = [...]byte { 4, 9, 0, 1, 5, 4, 2, 0, 3, 2, 3, 7, 5, 1}
+
+  defer func() {
+    if r := recover(); r == nil {
+      t.Errorf("The code did not produce the appropriate panic")
+    }
+  }()
+
+  // Ask for the decode and check for panic
+  Decode(imei[:])
 }
 
-func TestDecodePanics(t *testing.T) {
-	panic(common.ErrNotImplemented)
+func TestDecodeInvalidChecksumPanic(t *testing.T) {
+  // example invalid checksum IMEI number 490154203237519
+  var imei = [...]byte { 4, 9, 0, 1, 5, 4, 2, 0, 3, 2, 3, 7, 5, 1, 9}
+
+  defer func() {
+    if r := recover(); r == nil {
+      t.Errorf("The code did not produce the appropriate panic")
+    }
+  }()
+
+  // Ask for the decode and check for panic
+  Decode(imei[:])
 }
 
 func BenchmarkDecode(b *testing.B) {
-	panic(common.ErrNotImplemented)
+	b.ReportAllocs()
+
+  var imei = [...]byte { 4, 9, 0, 1, 5, 4, 2, 0, 3, 2, 3, 7, 5, 1, 8}
+
+	for i := 0; i < b.N; i++ {
+		result, _ := Decode(imei[:])
+    if result != 490154203237518 {
+			b.Error("Did not receive the proper decoded IMEI")
+		}
+	}
 }
-*/
