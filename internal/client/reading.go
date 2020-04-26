@@ -44,13 +44,28 @@ func (r *Reading) Decode(b []byte) (ok bool) {
   }
 
   // First convert the values
-  r.Temperature = math.Float64frombits(binary.LittleEndian.Uint64(b[0:8]))
-  r.Altitude = math.Float64frombits(binary.LittleEndian.Uint64(b[8:16]))
-  r.Latitude = math.Float64frombits(binary.LittleEndian.Uint64(b[16:24]))
-  r.Longitude = math.Float64frombits(binary.LittleEndian.Uint64(b[24:32]))
-  r.BatteryLevel = math.Float64frombits(binary.LittleEndian.Uint64(b[32:40]))
+  r.Temperature = math.Float64frombits(binary.BigEndian.Uint64(b[0:8]))
+  r.Altitude = math.Float64frombits(binary.BigEndian.Uint64(b[8:16]))
+  r.Latitude = math.Float64frombits(binary.BigEndian.Uint64(b[16:24]))
+  r.Longitude = math.Float64frombits(binary.BigEndian.Uint64(b[24:32]))
+  r.BatteryLevel = math.Float64frombits(binary.BigEndian.Uint64(b[32:40]))
 
   // Next check the values against the limits and unset is outside
+  if r.Temperature > 300 || r.Temperature < -300 {
+    return false
+  }
+  if r.Altitude > 20000 || r.Altitude < -20000 {
+    return false
+  }
+  if r.Latitude > 90 || r.Latitude < -90 {
+    return false
+  }
+  if r.Longitude > 180 || r.Longitude < -180 {
+    return false
+  }
+  if r.BatteryLevel > 100 || r.BatteryLevel < 0 {
+    return false
+  }
 
   return true
 }
@@ -68,11 +83,11 @@ func (r *Reading) Encode() (b []byte) {
 }
 
 // This function will turn a float64 into a byte array
-// LittleEndian order
+// BigEndian order
 func toBytes(input float64) (b []byte) {
   buf := new(bytes.Buffer)
 
-	err := binary.Write(buf, binary.LittleEndian, input)
+	err := binary.Write(buf, binary.BigEndian, input)
 	if err != nil {
 		common.Err(err)
 	}
