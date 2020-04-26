@@ -3,7 +3,13 @@ package client
 import (
   "encoding/binary"
   "bytes"
+  "errors"
+  "math"
   "github.com/spin-org/thermomatic/internal/common"
+)
+
+var (
+	ErrDecodeLength  = errors.New("client: decode length is not 40 bytes")
 )
 
 // Reading is the set of device readings.
@@ -31,7 +37,22 @@ type Reading struct {
 // Decode does NOT allocate under any condition. Additionally, it panics if b
 // isn't at least 40 bytes long.
 func (r *Reading) Decode(b []byte) (ok bool) {
-	panic(common.ErrNotImplemented)
+  // First thing is to check the length to ensure it's 40 bytes long
+  if len(b) != 40 {
+    common.Err(ErrDecodeLength)
+    panic(ErrDecodeLength)
+  }
+
+  // First convert the values
+  r.Temperature = math.Float64frombits(binary.LittleEndian.Uint64(b[0:8]))
+  r.Altitude = math.Float64frombits(binary.LittleEndian.Uint64(b[8:16]))
+  r.Latitude = math.Float64frombits(binary.LittleEndian.Uint64(b[16:24]))
+  r.Longitude = math.Float64frombits(binary.LittleEndian.Uint64(b[24:32]))
+  r.BatteryLevel = math.Float64frombits(binary.LittleEndian.Uint64(b[32:40]))
+
+  // Next check the values against the limits and unset is outside
+
+  return true
 }
 
 // This function will take a Reading struct and return the byte
