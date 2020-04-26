@@ -1,6 +1,10 @@
 package client
 
-import "github.com/spin-org/thermomatic/internal/common"
+import (
+  "encoding/binary"
+  "bytes"
+  "github.com/spin-org/thermomatic/internal/common"
+)
 
 // Reading is the set of device readings.
 type Reading struct {
@@ -28,4 +32,28 @@ type Reading struct {
 // isn't at least 40 bytes long.
 func (r *Reading) Decode(b []byte) (ok bool) {
 	panic(common.ErrNotImplemented)
+}
+
+// This function will take a Reading struct and return the byte
+// array from it that will be sent through the socket.  This function
+// it ONLY used in the client for testing and is not part of the server.
+func (r *Reading) Encode() (b []byte) {
+  total := append(toBytes(r.Temperature), toBytes(r.Altitude)...)
+  total = append(total, toBytes(r.Latitude)...)
+  total = append(total, toBytes(r.Longitude)...)
+  total = append(total, toBytes(r.BatteryLevel)...)
+
+  return total
+}
+
+// This function will turn a float64 into a byte array
+// LittleEndian order
+func toBytes(input float64) (b []byte) {
+  buf := new(bytes.Buffer)
+
+	err := binary.Write(buf, binary.LittleEndian, input)
+	if err != nil {
+		common.Err(err)
+	}
+	return buf.Bytes()
 }
