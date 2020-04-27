@@ -12,13 +12,16 @@ var ErrNotImplemented = errors.New("not implemented")
 
 // This will output string to STDERR for reading on the prompt
 func Err(input error) {
-  os.Stdout.WriteString("ERROR: ")
+  os.Stderr.WriteString("ERROR: ")
   fmt.Fprintln(os.Stderr, input)
-  os.Stdout.WriteString("/n")
 }
 
 // This will output string to STDOUT for reading on the prompt
 func Out(input string) {
-  os.Stdout.WriteString("OUTPUT: " + input + "\n")
+  os.Stderr.WriteString("INFO: " + input + "\n")
 }
 
+// This will output string to STDOUT for reading on the prompt
+func Data(input string) {
+  os.Stdout.WriteString(input + "\n")
+}

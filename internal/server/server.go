@@ -11,6 +11,7 @@ import (
   "strconv"
 	"github.com/spin-org/thermomatic/internal/common"
 	"github.com/spin-org/thermomatic/internal/imei"
+	"github.com/spin-org/thermomatic/internal/client"
 )
 
 var (
@@ -22,6 +23,9 @@ var (
 // Its takes the connection as a parameter
 func handleConnection(con net.Conn) {
   common.Out("Have a valid connection")
+
+  // Declare a Reading for collecting and decoding data
+  var reading client.Reading
 
   // Recover, close connection, and return in the event of a panic
   defer func() {
@@ -54,7 +58,7 @@ func handleConnection(con net.Conn) {
   }
 
   // Check the length, if it's 0 then we've timed out and
-  // need to close and break.
+  // need to close and return.
   if dataLen == 0 {
     common.Err(ErrImeiTimeout)
     con.Close()
@@ -78,18 +82,18 @@ func handleConnection(con net.Conn) {
 
 		if err != nil {
 			if err == io.EOF {
-				fmt.Println("Connection closed by client!")
+				common.Out("Connection closed by client!")
 				return
 			}
 		}
 
-    fmt.Println(dataLen)
-    fmt.Println(readBuf)
-	}
-  // First get the IMEI from the login message
+    // With the data in hand, decode it for printing
+    reading.Decode(readBuf[0:40])
 
-  // Next start looping to read data, making sure that they
-  // are coming every 2 seconds
+    // Finally output the data on STDOUT in the proper format
+    common.Data(fmt.Sprintf("%v,%v,%v,%v,%v,%v,%v\n", imei, time.Now().UnixNano(), reading.Temperature, reading.Altitude, reading.Latitude, reading.Longitude, reading.BatteryLevel))
+
+	}
 }
 
 // This function is called in the main to start the socket server.
@@ -120,4 +124,3 @@ func StartServer(port int) {
     go handleConnection(con)
   }
 }
-

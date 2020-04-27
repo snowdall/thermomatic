@@ -12,13 +12,15 @@ import (
 const PORT = 1337
 var TestImei = []byte { 4, 9, 0, 1, 5, 4, 2, 0, 3, 2, 3, 7, 5, 1, 8}
 
-func ClientConnect(imei []byte, imei_timeout uint64, reading_timeout uint64) {
+func ClientConnect(imei []byte, imei_timeout uint64, reading_timeout uint64, iter uint16) int {
+
+  var i uint16 = 0
 
   CONNECT := "localhost:" + strconv.Itoa(PORT)
   con, err := net.Dial("tcp", CONNECT)
   if err != nil {
     fmt.Println(err)
-    return
+    return 3
   }
 
   // For testing, put in a delay here for the IMEI sending.  This will
@@ -28,28 +30,32 @@ func ClientConnect(imei []byte, imei_timeout uint64, reading_timeout uint64) {
   // Set the timeout for all operations to 3 second
   con.SetWriteDeadline(time.Now().Add(3 * time.Second))
 
-  dataLen, err := con.Write(imei)
+  _, err = con.Write(imei)
   if err != nil {
     fmt.Println(err)
-    return
+    return 2
   }
 
   // This is the loop for sending data to the server
-  for {
+  for i < iter {
 
     // Set the timeout for all operations to 3 second
     con.SetWriteDeadline(time.Now().Add(3 * time.Second))
 
-    dataLen, err = con.Write(generateRandomReading())
+    _, err = con.Write(generateRandomReading())
     if err != nil {
       fmt.Println(err)
-      return
+      return 1
     }
 
     // For testing, put in a delay between each data reading sent.  This
     // weill test the server response.
     time.Sleep(time.Duration(reading_timeout) * time.Millisecond)
+
+    i++
   }
+  con.Close()
+  return 0
 }
 
 // Used for testing, this function creates a Reading struct that has
