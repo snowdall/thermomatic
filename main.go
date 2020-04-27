@@ -10,6 +10,5 @@ const PORT = 1337
 func main() {
   common.Out("Starting thermomatic service")
   server.StartServer(PORT)
-
 }
 
